@@ -22,14 +22,27 @@ Output: Sigmoid activation for binary segmentation
 - **Mac MPS GPU support**
 - **Robust data preprocessing pipeline**
 
-
+## Your dataset should have this format:
+dataset/
+├── Original/      # Input images
+│   ├── image1.jpg
+│   ├── image2.png
+│   └── ...
+└── Mask/         # Ground truth masks
+    ├── image1.jpg
+    ├── image2.png
+    └── ...
 
 ## Installation
 ```bash
-git clone https://github.com/FahimSultan-cyb/ReVGG-R2Net.git
+!git clone https://github.com/FahimSultan-cyb/ReVGG-R2Net.git
 import os, sys
 root_path = os.path.join(os.getcwd(), "ReVGG-R2Net")
 os.chdir(root_path)
+!pip install -e .
+!python setup_colab.py
+!python download_pretrained.py
+
 !pip install -r requirements.txt
 ```
 
@@ -37,16 +50,17 @@ os.chdir(root_path)
 ## Training
 ```bash
 from scripts.train import train_model
-model, history = train_model(data_path="path/to/dataset")
+model, history = train_model("path_of_your dataset")
 ```
 
 
 ## Inference
 ```bash
-from scripts.inference import load_model_and_predict
-predictions = load_model_and_predict(
-    model_path="path/to/model.keras",
-    image_path="path/to/test/images"
+from scripts.evaluate import evaluate_model
+
+results = evaluate_model(
+    model_path="pretrained",
+    test_data_path="path_of_your dataset"
 )
 ```
 
@@ -60,9 +74,12 @@ results = evaluate_model(
 )
 ```
 
+### To run in google coolab (Less memory)
+```bash
+from scripts.train_colab import train_model_colab
+model, history = train_model_colab(data_path="path/to/dataset")
 
-
-
+```
 
 
 
