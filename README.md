@@ -2,6 +2,15 @@
 A robust implementation of ReVGG-R2Net architecture combining VGG16 encoder with Residual Recurrent Convolutional blocks for binary medical image segmentation.
 
 
+
+### Dataset
+
+Due to the large size of the dataset, we have hosted it on Google Drive.  
+You can access and download it using the following link:  
+
+👉 [Download Dataset from Google Drive](https://drive.google.com/drive/folders/1CVJXzhVv3MZStsx6y3IjnCPU-EclzjOZ?usp=drive_link)
+
+
 ### Architecture Overview
 Encoder: VGG16 with ImageNet pretrained weights (all layers trainable)
 Core Innovation: Residual Recurrent Convolutional Blocks (R2 blocks)
@@ -23,6 +32,7 @@ Output: Sigmoid activation for binary segmentation
 - **Robust data preprocessing pipeline**
 
 ## Your dataset should have this format:
+
 ```bash
 dataset/
 ├── Original
@@ -34,6 +44,7 @@ dataset/
     ├── image2.png
     └── ...
 ```
+
 
 ## Installation
 ```bash
