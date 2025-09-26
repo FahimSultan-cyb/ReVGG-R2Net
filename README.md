@@ -8,7 +8,7 @@ A robust implementation of ReVGG-R2Net architecture combining VGG16 encoder with
 Due to the large size of the dataset, we have hosted it on Google Drive.  
 You can access and download it using the following link:  
 
-👉 [Download Dataset from Google Drive](https://drive.google.com/drive/folders/1CVJXzhVv3MZStsx6y3IjnCPU-EclzjOZ?usp=drive_link)
+👉 [Download Dataset from Google Drive](https://drive.google.com/drive/folders/1CVJXzhVv3MZStsx6y3IjnCPU-EclzjOZ)
 
 
 ## Methodology
