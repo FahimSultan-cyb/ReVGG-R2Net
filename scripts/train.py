@@ -194,7 +194,10 @@ def train_model(data_path, save_path=None):
         test_predictions = model.predict(x_test, batch_size=1, verbose=1)
         test_predictions_binary = (test_predictions > 0.5).astype(np.float32)
         
-        test_accuracy = accuracy_score(y_test.flatten(), test_predictions_binary.flatten())
+        y_test_binary = (y_test.flatten() > 0.5).astype(int)
+        test_predictions_binary_flat = (test_predictions_binary.flatten() > 0.5).astype(int)
+        
+        test_accuracy = accuracy_score(y_test_binary, test_predictions_binary_flat)
         test_dice = dice_coef(y_test, test_predictions).numpy()
         test_jaccard = jaccard_index(y_test, test_predictions).numpy()
         test_precision = precision_metric(y_test, test_predictions).numpy()
@@ -246,7 +249,7 @@ def train_model(data_path, save_path=None):
     print(f"Optimal Batch Size: {results['Best_Batch_Size']}")
     print("="*60)
     
-    return model, history, results
+    return model, history
 
 if __name__ == "__main__":
     import sys
@@ -255,4 +258,4 @@ if __name__ == "__main__":
         sys.exit(1)
     
     data_path = sys.argv[1]
-    final_model, training_history, test_results = train_model(data_path)
+    final_model, training_history = train_model(data_path)
