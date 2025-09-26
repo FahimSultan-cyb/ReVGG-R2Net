@@ -28,10 +28,10 @@ def optimize_batch_size(x_train, y_train, x_val, y_val):
     
     print("Optimizing batch size with memory management...")
     
-    x_train_small = x_train[:min(20, len(x_train))]
-    y_train_small = y_train[:min(20, len(y_train))]
-    x_val_small = x_val[:min(10, len(x_val))]
-    y_val_small = y_val[:min(10, len(y_val))]
+    x_train_small = x_train[:min(10, len(x_train))]
+    y_train_small = y_train[:min(10, len(y_train))]
+    x_val_small = x_val[:min(5, len(x_val))]
+    y_val_small = y_val[:min(5, len(y_val))]
     
     for batch_size in config.BATCH_SIZE_OPTIONS:
         try:
@@ -50,7 +50,7 @@ def optimize_batch_size(x_train, y_train, x_val, y_val):
                 x_train_small, y_train_small,
                 validation_data=(x_val_small, y_val_small),
                 batch_size=batch_size,
-                epochs=config.BATCH_SIZE_TEST_EPOCHS,
+                epochs=2,
                 verbose=0,
                 shuffle=False
             )
@@ -162,8 +162,14 @@ def train_model(data_path, save_path=None):
         )
         best_batch_size = 1
     
-    model.save(save_path)
-    print(f"Final model saved at: {save_path}")
+    try:
+        model.save(save_path)
+        print(f"Model saved successfully at: {save_path}")
+    except Exception as e:
+        print(f"Failed to save .keras format: {e}")
+        weights_path = save_path.replace('.keras', '_weights.h5')
+        model.save_weights(weights_path)
+        print(f"Model weights saved at: {weights_path}")
     
     plt.figure(figsize=(20, 15))
     metrics_to_plot = ['loss', 'dice_coef', 'jaccard_index', 'precision_metric', 'recall_metric', 'f1_metric']
@@ -181,13 +187,8 @@ def train_model(data_path, save_path=None):
         plt.grid(True)
     
     plt.tight_layout()
-    plt.savefig(os.path.join(config.RESULTS_DIR, 'training_convergence_analysis.png'), dpi=300, bbox_inches='tight')
+    plt.savefig(os.path.join(config.RESULTS_DIR, 'training_convergence.png'), dpi=300, bbox_inches='tight')
     plt.show()
-    
-    try:
-        model.load_weights(save_path)
-    except:
-        print("Using current model weights (checkpoint loading failed)")
     
     print("Evaluating on test set...")
     try:
@@ -225,7 +226,7 @@ def train_model(data_path, save_path=None):
     except Exception as e:
         print(f"Evaluation failed: {e}")
         results = {
-            'Model': 'ReVGG-R2Net',
+            'Model': 'ReVGG-R2Net-V5',
             'Training_Epochs': len(history.history['loss']),
             'Best_Batch_Size': best_batch_size,
             'Status': 'Training completed, evaluation failed'
@@ -235,7 +236,7 @@ def train_model(data_path, save_path=None):
         json.dump(results, f, indent=4)
     
     print("\n" + "="*60)
-    print("TRAINING RESULTS")
+    print("TRAINING RESULTS V5")
     print("="*60)
     print(f"Model: {results['Model']}")
     if 'Accuracy' in results:
