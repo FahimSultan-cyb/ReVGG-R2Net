@@ -3,7 +3,7 @@ import json
 import tensorflow as tf
 from models.revgg_r2net import create_revgg_r2net
 from utils.metrics import get_custom_objects
-
+import numpy as np
 def find_model_files(pretrained_dir="pretrained"):
     model_files = {}
     
