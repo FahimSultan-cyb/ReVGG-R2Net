@@ -1,4 +1,5 @@
 import os
+import tensorflow as tf
 
 class Config:
     RANDOM_SEED = 42
@@ -19,8 +20,8 @@ class Config:
     EARLY_STOPPING_PATIENCE = 20
     
     MAX_EPOCHS = 50
-    BATCH_SIZE_OPTIONS = [4, 8, 16]
-    BATCH_SIZE_TEST_EPOCHS = 5
+    BATCH_SIZE_OPTIONS = [1, 2, 4]
+    BATCH_SIZE_TEST_EPOCHS = 3
     
     RECURRENT_STEPS = 2
     
@@ -33,3 +34,16 @@ class Config:
     def create_directories():
         os.makedirs(Config.RESULTS_DIR, exist_ok=True)
         os.makedirs(Config.MODELS_DIR, exist_ok=True)
+    
+    @staticmethod
+    def configure_gpu():
+        gpus = tf.config.experimental.list_physical_devices('GPU')
+        if gpus:
+            try:
+                for gpu in gpus:
+                    tf.config.experimental.set_memory_growth(gpu, True)
+                print(f"GPU memory growth enabled for {len(gpus)} GPU(s)")
+            except RuntimeError as e:
+                print(f"GPU configuration error: {e}")
+        else:
+            print("No GPU found, using CPU")
