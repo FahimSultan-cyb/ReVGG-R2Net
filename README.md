@@ -23,15 +23,17 @@ Output: Sigmoid activation for binary segmentation
 - **Robust data preprocessing pipeline**
 
 ## Your dataset should have this format:
+```bash
 dataset/
-├── Original/      # Input images
+├── Original
 │   ├── image1.jpg
 │   ├── image2.png
 │   └── ...
-└── Mask/         # Ground truth masks
+└── Mask
     ├── image1.jpg
     ├── image2.png
     └── ...
+```
 
 ## Installation
 ```bash
