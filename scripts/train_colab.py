@@ -12,13 +12,24 @@ from config import Config
 from models.revgg_r2net import create_revgg_r2net
 from utils.data_loader import load_and_preprocess_data
 from utils.metrics import dice_coef, jaccard_index, precision_metric, recall_metric, f1_metric
-from utils.memory_utils import configure_tensorflow_memory, clear_session, MemoryCallback
 
-configure_tensorflow_memory()
+gpus = tf.config.experimental.list_physical_devices('GPU')
+if gpus:
+    try:
+        for gpu in gpus:
+            tf.config.experimental.set_memory_growth(gpu, True)
+        print(f"GPU memory growth enabled for {len(gpus)} GPU(s)")
+    except RuntimeError as e:
+        print(f"GPU configuration error: {e}")
+
 config = Config()
 
+def clear_memory():
+    tf.keras.backend.clear_session()
+    gc.collect()
+
 def train_model_colab(data_path, save_path=None):
-    clear_session()
+    clear_memory()
     config.create_directories()
     
     if save_path is None:
@@ -37,7 +48,7 @@ def train_model_colab(data_path, save_path=None):
     print("Creating model...")
     model = create_revgg_r2net()
     
-    optimizer = optimizers.Adam(learning_rate=config.INITIAL_LEARNING_RATE)
+    optimizer = optimizers.Adam(learning_rate=1e-4)
     
     model.compile(
         optimizer=optimizer, 
@@ -68,9 +79,8 @@ def train_model_colab(data_path, save_path=None):
         verbose=1,
         save_weights_only=False
     )
-    memory_callback = MemoryCallback()
     
-    callbacks_list = [reduce_lr, early_stopping, model_checkpoint, memory_callback]
+    callbacks_list = [reduce_lr, early_stopping, model_checkpoint]
     
     print("Starting training with batch size 1...")
     try:
@@ -88,23 +98,7 @@ def train_model_colab(data_path, save_path=None):
         
     except Exception as e:
         print(f"Training error: {e}")
-        print("Attempting with even smaller batch and reduced epochs...")
-        clear_session()
-        
-        model = create_revgg_r2net()
-        model.compile(
-            optimizer=optimizers.Adam(learning_rate=1e-4), 
-            loss='binary_crossentropy', 
-            metrics=[dice_coef]
-        )
-        
-        history = model.fit(
-            x_train[:min(50, len(x_train))], y_train[:min(50, len(y_train))],
-            validation_data=(x_val[:min(20, len(x_val))], y_val[:min(20, len(y_val))]),
-            batch_size=1,
-            epochs=10,
-            verbose=1
-        )
+        return None, None
     
     try:
         model.save(save_path)
@@ -141,14 +135,17 @@ def train_model_colab(data_path, save_path=None):
         test_predictions = model.predict(x_test, batch_size=1, verbose=1)
         test_predictions_binary = (test_predictions > 0.5).astype(np.float32)
         
+        y_test_binary = (y_test.flatten() > 0.5).astype(int)
+        test_predictions_binary_flat = (test_predictions_binary.flatten() > 0.5).astype(int)
+        
         from sklearn.metrics import accuracy_score
-        test_accuracy = accuracy_score(y_test.flatten(), test_predictions_binary.flatten())
-        test_dice = dice_coef(y_test, test_predictions).numpy()
+        test_accuracy = accuracy_score(y_test_binary, test_predictions_binary_flat)
+        test_dice = float(dice_coef(y_test, test_predictions).numpy())
         
         results = {
             'Model': 'ReVGG-R2Net-Colab',
             'Accuracy': float(test_accuracy),
-            'Dice_Coefficient': float(test_dice),
+            'Dice_Coefficient': test_dice,
             'Training_Epochs': len(history.history['loss']),
             'Batch_Size': 1,
             'Dataset_Size': {
@@ -159,19 +156,20 @@ def train_model_colab(data_path, save_path=None):
         }
         
         try:
-            test_jaccard = jaccard_index(y_test, test_predictions).numpy()
-            test_precision = precision_metric(y_test, test_predictions).numpy()
-            test_recall = recall_metric(y_test, test_predictions).numpy()
-            test_f1 = f1_metric(y_test, test_predictions).numpy()
+            test_jaccard = float(jaccard_index(y_test, test_predictions).numpy())
+            test_precision = float(precision_metric(y_test, test_predictions).numpy())
+            test_recall = float(recall_metric(y_test, test_predictions).numpy())
+            test_f1 = float(f1_metric(y_test, test_predictions).numpy())
             
             results.update({
-                'Jaccard_Index': float(test_jaccard),
-                'Precision': float(test_precision),
-                'Recall': float(test_recall),
-                'F1_Score': float(test_f1)
+                'Jaccard_Index': test_jaccard,
+                'Precision': test_precision,
+                'Recall': test_recall,
+                'F1_Score': test_f1
             })
-        except:
-            print("Extended metrics calculation failed, using basic metrics only")
+        except Exception as metric_error:
+            print(f"Extended metrics calculation failed: {metric_error}")
+            print("Using basic metrics only")
         
     except Exception as e:
         print(f"Evaluation failed: {e}")
@@ -201,43 +199,8 @@ def train_model_colab(data_path, save_path=None):
     print(f"Batch Size: {results['Batch_Size']}")
     print("="*60)
     
-    return model, history, results
-
-def quick_test_model():
-    print("Testing model creation...")
-    try:
-        model = create_revgg_r2net()
-        print(f"Model created successfully with {model.count_params():,} parameters")
-        print(f"Input shape: {model.input_shape}")
-        print(f"Output shape: {model.output_shape}")
-        del model
-        clear_session()
-        return True
-    except Exception as e:
-        print(f"Model creation failed: {e}")
-        return False
+    return model, history
 
 if __name__ == "__main__":
-    print("ReVGG-R2Net Colab Training Script")
-    print("="*50)
-    
-    if not quick_test_model():
-        print("Model test failed. Check your setup.")
-        exit(1)
-    
-    data_path = input("Enter your data path: ").strip()
-    if not data_path:
-        data_path = "/content/drive/MyDrive/test"
-    
-    print(f"Using data path: {data_path}")
-    
-    if not os.path.exists(data_path):
-        print(f"Data path {data_path} does not exist!")
-        exit(1)
-    
-    try:
-        model, history, results = train_model_colab(data_path)
-        print("Training completed successfully!")
-    except Exception as e:
-        print(f"Training failed with error: {e}")
-        print("Please check your data path and try again.")
+    data_path = "/content/drive/MyDrive/test"
+    model, history = train_model_colab(data_path)
