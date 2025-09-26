@@ -1,51 +1,82 @@
-from setuptools import setup, find_packages
+#!/usr/bin/env python3
 
-with open("README.md", "r", encoding="utf-8") as fh:
-    long_description = fh.read()
+import os
+import sys
+import subprocess
+import tensorflow as tf
 
-with open("requirements.txt", "r", encoding="utf-8") as fh:
-    requirements = [line.strip() for line in fh if line.strip() and not line.startswith("#")]
+def configure_environment():
+    gpus = tf.config.experimental.list_physical_devices('GPU')
+    if gpus:
+        try:
+            for gpu in gpus:
+                tf.config.experimental.set_memory_growth(gpu, True)
+            print(f"GPU memory growth enabled for {len(gpus)} GPU(s)")
+        except RuntimeError as e:
+            print(f"GPU configuration error: {e}")
+    else:
+        print("No GPU found, using CPU")
+    
+    os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
+    os.environ['TF_GPU_THREAD_MODE'] = 'gpu_private'
 
-setup(
-    name="revgg-r2net",
-    version="1.0.0",
-    author="Your Name",
-    author_email="your.email@example.com",
-    description="ReVGG-R2Net: Residual VGG with Recurrent Blocks for Medical Image Segmentation",
-    long_description=long_description,
-    long_description_content_type="text/markdown",
-    url="https://github.com/FahimSultan-cyb/ReVGG-R2Net",
-    packages=find_packages(),
-    classifiers=[
-        "Development Status :: 4 - Beta",
-        "Intended Audience :: Science/Research",
-        "License :: OSI Approved :: MIT License",
-        "Operating System :: OS Independent",
-        "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.8",
-        "Programming Language :: Python :: 3.9",
-        "Programming Language :: Python :: 3.10",
-        "Topic :: Scientific/Engineering :: Artificial Intelligence",
-        "Topic :: Scientific/Engineering :: Medical Science Apps.",
-    ],
-    python_requires=">=3.8",
-    install_requires=requirements,
-    extras_require={
-        "dev": [
-            "pytest>=6.0",
-            "pytest-cov>=2.0",
-            "black>=21.0",
-            "flake8>=3.8",
-            "mypy>=0.800",
-        ],
-    },
-    entry_points={
-        "console_scripts": [
-            "revgg-train=scripts.train:main",
-            "revgg-infer=scripts.inference:main",
-            "revgg-eval=scripts.evaluate:main",
-        ],
-    },
-    include_package_data=True,
-    zip_safe=False,
-)
+def install_requirements():
+    requirements = [
+        'tensorflow>=2.10.0',
+        'numpy>=1.21.0',
+        'scikit-learn>=1.0.0',
+        'pillow>=8.3.0',
+        'matplotlib>=3.5.0',
+        'scikit-image>=0.19.0',
+        'gdown>=4.6.0'
+    ]
+    
+    for req in requirements:
+        try:
+            subprocess.check_call([sys.executable, "-m", "pip", "install", req], 
+                                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            print(f"Installed: {req}")
+        except subprocess.CalledProcessError:
+            print(f"Failed to install: {req}")
+
+def test_installation():
+    try:
+        configure_environment()
+        
+        from models.revgg_r2net import create_revgg_r2net
+        from utils.metrics import dice_coef
+        from utils.data_loader import DataLoader
+        
+        print("Testing model creation...")
+        model = create_revgg_r2net()
+        print(f"Model created: {model.count_params():,} parameters")
+        
+        del model
+        tf.keras.backend.clear_session()
+        
+        print("All tests passed!")
+        return True
+        
+    except Exception as e:
+        print(f"Test failed: {e}")
+        return False
+
+def main():
+    print("ReVGG-R2Net Setup V5")
+    print("="*40)
+    
+    print("Installing requirements...")
+    install_requirements()
+    
+    print("Testing installation...")
+    if test_installation():
+        print("\nSetup completed successfully!")
+        print("Usage:")
+        print("  Training: python scripts/train.py /path/to/data")
+        print("  Inference: python scripts/load_pretrained.py /path/to/images")
+        print("  Evaluate: python scripts/evaluate.py pretrained /path/to/test")
+    else:
+        print("\nSetup failed. Check dependencies.")
+
+if __name__ == "__main__":
+    main()
