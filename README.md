@@ -1,5 +1,5 @@
 # ReVGG-R2Net: Residual VGG with Recurrent Blocks for Medical Image Segmentation
-A robust implementation of ReVGG-R2Net architecture combining VGG16 encoder with Residual Recurrent Convolutional blocks for binary medical image segmentation.
+A robust implementation of ReVGG-R2Net architecture combining VGG16 encoder with Residual Recurrent Convolutional blocks for medical image segmentation.
 
 
 
@@ -10,6 +10,12 @@ You can access and download it using the following link:
 
 👉 [Download Dataset from Google Drive](https://drive.google.com/drive/folders/1CVJXzhVv3MZStsx6y3IjnCPU-EclzjOZ?usp=drive_link)
 
+
+## Methodology
+
+The overall methodology of our approach is illustrated below:
+
+![Methodology](models/Picture1.jpg)
 
 ### Architecture Overview
 Encoder: VGG16 with ImageNet pretrained weights (all layers trainable)
