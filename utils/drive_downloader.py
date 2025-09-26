@@ -10,8 +10,8 @@ def download_pretrained_models(download_dir="pretrained"):
     """
     os.makedirs(download_dir, exist_ok=True)
     
-    drive_folder_url = "https://drive.google.com/drive/folders/1338RpeFgrQAA20N9cvMKzQt58dPDriC_?usp=drive_link"
-    folder_id = "1338RpeFgrQAA20N9cvMKzQt58dPDriC_"
+    drive_folder_url = "https://drive.google.com/drive/folders/1yd0zoHllDGmuq_jkz0T8D02fDVUPbTZi?usp=sharing"
+    folder_id = "1yd0zoHllDGmuq_jkz0T8D02fDVUPbTZi"
     
     print(f"Downloading pretrained models to: {download_dir}")
     print("This may take a few minutes depending on your connection...")
