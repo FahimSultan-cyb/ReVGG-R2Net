@@ -5,6 +5,7 @@ from PIL import Image, ImageOps
 
 from config import Config
 from utils.metrics import get_custom_objects
+from models.revgg_r2net import create_revgg_r2net
 
 config = Config()
 
@@ -88,7 +89,37 @@ class ModelInference:
             )
 
 def load_model_and_predict(model_path, image_path, threshold=0.5, output_dir=None):
-    inference = ModelInference(model_path)
+    if not os.path.exists(model_path):
+        print(f"Model file not found: {model_path}")
+        
+        pretrained_dir = os.path.dirname(model_path) if os.path.dirname(model_path) else "pretrained"
+        
+        available_files = []
+        for root, dirs, files in os.walk(pretrained_dir):
+            for file in files:
+                if file.endswith(('.keras', '.h5', '.weights')):
+                    available_files.append(os.path.join(root, file))
+        
+        if available_files:
+            print("Available model files:")
+            for file in available_files:
+                print(f"  - {file}")
+            
+            model_path = available_files[0]
+            print(f"Using: {model_path}")
+        else:
+            raise FileNotFoundError(f"No model files found in {pretrained_dir}")
+    
+    if model_path.endswith('.h5') or 'weights' in model_path.lower():
+        print("Loading model from weights file...")
+        model = create_revgg_r2net()
+        model.load_weights(model_path)
+        
+        inference = ModelInference.__new__(ModelInference)
+        inference.model = model
+        inference.model_path = model_path
+    else:
+        inference = ModelInference(model_path)
     
     if os.path.isfile(image_path):
         prediction, binary_prediction = inference.predict_single(image_path, threshold)
