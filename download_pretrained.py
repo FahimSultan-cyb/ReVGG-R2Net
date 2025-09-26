@@ -5,24 +5,24 @@ import sys
 import subprocess
 
 def install_gdown():
-    """Install gdown if not available"""
+
     try:
         import gdown
-        print("✓ gdown already installed")
+
         return True
     except ImportError:
-        print("Installing gdown...")
+
         try:
             subprocess.check_call([sys.executable, "-m", "pip", "install", "gdown"])
             import gdown
-            print("✓ gdown installed successfully")
+
             return True
         except Exception as e:
-            print(f"✗ Failed to install gdown: {e}")
+
             return False
 
 def download_from_google_drive():
-    """Download pretrained models from Google Drive"""
+
     
     if not install_gdown():
         return False
@@ -37,9 +37,10 @@ def download_from_google_drive():
     print("="*60)
     print("Downloading ReVGG-R2Net Pretrained Models")
     print("="*60)
+    print("This may take several minutes...")
     print(f"Source: https://drive.google.com/drive/folders/{folder_id}")
     print(f"Destination: {download_dir}/")
-    print("This may take several minutes...")
+
     
     try:
         folder_url = f"https://drive.google.com/drive/folders/{folder_id}"
@@ -53,7 +54,7 @@ def download_from_google_drive():
         
         if downloaded_files:
             print("\n" + "="*60)
-            print("✓ DOWNLOAD COMPLETED SUCCESSFULLY!")
+            print("DOWNLOAD COMPLETED SUCCESSFULLY!")
             print("="*60)
             print("Downloaded model files:")
             for file in downloaded_files:
@@ -63,14 +64,16 @@ def download_from_google_drive():
             print(f"\nModels are ready to use in the '{download_dir}' directory!")
             return True
         else:
-            print("✗ No model files found in downloaded content")
+            print("No model files found in downloaded content")
             return False
             
     except Exception as e:
-        print(f"✗ Download failed: {e}")
-        print("\nAlternative download methods:")
-        print("1. Visit: https://drive.google.com/drive/folders/1338RpeFgrQAA20N9cvMKzQt58dPDriC_")
-        print("2. Download manually and place in 'pretrained/' directory")
+        print("This may take several minutes...\n\n")
+        
+        print("You can Download it manually and place in 'pretrained/' directory\n\n")
+
+        print("Visit: https://drive.google.com/file/d/1rtUQdYNGQKWEeAUsmLxBT1eYCdDXLyvB/view?usp=drive_link")
+
         return False
 
 def main():
@@ -78,21 +81,17 @@ def main():
     print("="*60)
     
     if len(sys.argv) > 1 and sys.argv[1] == "--help":
-        print("Usage: python download_pretrained.py")
-        print("\nThis script downloads pretrained ReVGG-R2Net models from Google Drive")
+
         print("Models will be saved in the 'pretrained/' directory")
         return
     
     success = download_from_google_drive()
     
     if success:
-        print("\n🎉 Ready to use ReVGG-R2Net!")
-        print("\nNext steps:")
-        print("1. For inference: python scripts/inference.py pretrained/model.keras /path/to/images")
-        print("2. For evaluation: python scripts/evaluate.py pretrained/model.keras /path/to/test/data")
-        print("3. For training: python scripts/train.py /path/to/your/dataset")
+        print("\n Ready to use ReVGG-R2Net!")
+
     else:
-        print("\n⚠️  Download failed. Please try manual download.")
+        print("This may take several minutes...")
 
 if __name__ == "__main__":
     main()
