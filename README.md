@@ -13,7 +13,7 @@ You can access and download it using the following link:
 
 ## Methodology
 
-The overall methodology of our approach is illustrated below:
+The models archtechture of our approach is illustrated below:
 
 ![Methodology](models/Picture1.jpg)
 
